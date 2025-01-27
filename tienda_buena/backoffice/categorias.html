@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>categorias</title>
+    <style>
+      input,
+      label {
+        display: inherit;
+      }
+
+      select {
+        margin-bottom: 20px;
+      }
+      input {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <select name="categoria" id="categoria"></select>
+      <label for="nombre">Nombre categoria</label>
+      <input type="text" id="nombre" />
+      <label for="descripcion">Descripcion tienda</label>
+      <input type="text" id="descripcion" />
+
+      <input type="hidden" id="oculto" />
+
+      <button id="btn_guardar">Guardar</button>
+      <button id="btn_eliminar">Eliminar</button>
+    </div>
+
+    <script>
+      const nombre = document.getElementById("nombre");
+      const descripcion = document.getElementById("descripcion");
+      const id = document.getElementById("oculto");
+      const selet = document.getElementById("categoria");
+      function cargarCombo() {
+        fetch("http://10.10.13.50/tienda/public/api/v1/api.php/categorias")
+          .then((response) => {
+            if (!response.ok) {
+              if (response.status == 404) {
+                console.log("Categorias no encontradas");
+              }
+              throw new Error("Error respuesta");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            selet.innerHTML = "";
+            let opcion = document.createElement("option");
+
+            opcion.textContent = "Nueva Categoria";
+            opcion.value = 0;
+            selet.appendChild(opcion);
+
+            data.forEach((categoria) => {
+              let opcion = document.createElement("option");
+
+              opcion.textContent = categoria.nombre;
+              opcion.value = categoria.id;
+
+              selet.appendChild(opcion);
+            });
+          });
+      }
+
+      cargarCombo();
+
+      function obtenerCategoria(id) {
+        fetch(
+          "http://10.10.13.50/tienda/public/api/v1/api.php/categorias/" + id
+        )
+          .then((response) => {
+            if (!response.ok) {
+              if (response.status == 404) {
+                console.log("Categorias no encontradas");
+              }
+              throw new Error("Error respuesta");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            nombre.value = data.nombre;
+            descripcion.value = data.descripcion;
+            oculto.value = data.id;
+          });
+      }
+
+      selet.addEventListener("change", () => {
+        if (selet.value > 0) {
+          obtenerCategoria(selet.value);
+        } else {
+          id.value = 0;
+          nombre.value = "";
+          descripcion.value = "";
+        }
+      });
+
+      function crearCategoria() {
+        fetch("http://10.10.13.50/tienda/public/api/v1/api.php/categorias", {
+          method: "post",
+          body: JSON.stringify({
+            nombre: nombre.value,
+            descripcion: descripcion.value,
+          }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              if (response.status == 400) {
+                console.log("Datos de entrada incorrectos");
+              }
+              throw new Error("Error respuesta");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            let opcion = document.createElement("option");
+            opcion.textContent = nombre.value;
+            opcion.value = data.id;
+
+            selet.appendChild(opcion);
+          });
+      }
+
+      document.getElementById("btn_guardar").addEventListener("click", () => {
+        if (selet.value > 0) {
+          actualizarCategoria(selet.value);
+        } else {
+          crearCategoria();
+        }
+      });
+
+      function actualizarCategoria(id) {
+        fetch(
+          "http://10.10.13.50/tienda/public/api/v1/api.php/categorias/" + id,
+          {
+            method: "put",
+            body: JSON.stringify({
+              nombre: nombre.value,
+              descripcion: descripcion.value,
+            }),
+          }
+        )
+          .then((response) => {
+            if (!response.ok) {
+              if (response.status == 404) {
+                console.log("Categorias no encontradas");
+              }
+              if (response.status == 400) {
+                console.log("Datos de entrada incorrectos");
+              }
+              throw new Error("Error respuesta");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            alert(data.message);
+          });
+      }
+
+      function eliminarCategoria(id) {
+        fetch(
+          "http://10.10.13.50/tienda/public/api/v1/api.php/categorias/" + id,
+          {
+            method: "delete",
+          }
+        ).then((response) => {
+          if (!response.ok) {
+            if (response.status == 404) {
+              console.log("Categorias no encontradas");
+            }
+            throw new Error("Error respuesta");
+          }
+          return response.json();
+        });
+      }
+
+      document.getElementById("btn_eliminar").addEventListener("click", () => {
+        eliminarCategoria(selet.value);
+        alert("Categoria eliminada con exito");
+      });
+    </script>
+  </body>
+</html>

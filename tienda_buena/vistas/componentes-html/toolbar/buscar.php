@@ -1,0 +1,2 @@
+<input class="bg-body-secondary border border-success border border-3 form-control me-2 text-white" id="searchInput" type="search" placeholder="Buscar productos" aria-label="Search" style="color: black;" value="<?php echo isset($_GET['busqueda']) ? $_GET['busqueda'] : ''; ?>" name="busqueda" />
+<button class="btn btn-success" type="submit" id="btn_buscar">Buscar</button>

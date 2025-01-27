@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form action="" id="formulario">
+      <label for="correo">Correo</label>
+      <input type="text" id="correo" />
+
+      <label for="password">Password</label>
+      <input type="text" id="password" />
+
+      <input type="button" value="enviar" id="btn_enviar" />
+    </form>
+    <script>
+      const formulario = document.getElementById("formulario");
+      document.getElementById("btn_enviar").addEventListener("click", () => {
+        fetch("http://localhost/tienda_buena/public/api/login.php", {
+          method: "post",
+          body: JSON.stringify({
+            email: document.getElementById("correo").value,
+            password: document.getElementById("password").value,
+          }),
+        })
+          .then((response) => {
+            if (response.status == 401) {
+              alert("login incorrecto");
+              throw new Error("Login incorrecto");
+            }
+            return response.json();
+          })
+          .then((obj_json) => {
+            alert(obj_json.token);
+            localStorage.setItem("token", obj_json.token);
+            formulario.style.display = "none";
+          });
+      });
+    </script>
+  </body>
+</html>
